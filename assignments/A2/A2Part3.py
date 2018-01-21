@@ -33,11 +33,3 @@ def DFT(x):
         res = np.dot(x, np.exp(-1j * 2 * np.pi * k * np.arange(N) / N))
         X = np.append(X, res)
     return X
-
-
-
-are_close = lambda a, b: all(np.isclose(x, y) for x, y in zip(a, b))
-answer = [10.0 + 0.0j,  -2. + 2.0j,  -2.0 - 9.79717439e-16j, -2.0 - 2.0j]
-prompt = [1, 2, 3, 4]
-
-assert are_close(DFT(prompt), answer), 'Incorrect'

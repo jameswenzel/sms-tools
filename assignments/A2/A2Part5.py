@@ -1,4 +1,5 @@
 import numpy as np
+from A2Part3 import DFT
 
 """
 A2-Part-5: Compute the magnitude spectrum (Optional)
@@ -12,6 +13,8 @@ magnitude spectrum of x.
 EXAMPLE: If you run your function using x = np.array([1, 2, 3, 4]), the function should return the following 
 numpy array magX: [array([10.0, 2.82842712, 2.0, 2.82842712])
 """
+
+
 def genMagSpec(x):
     """
     Input:
@@ -21,4 +24,5 @@ def genMagSpec(x):
         magX (numpy array) = The magnitude spectrum of the input sequence x
                              (length N)
     """
-    ## Your code here
+    return np.array([np.linalg.norm(k) for k in DFT(x)])
+
