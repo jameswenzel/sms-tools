@@ -60,3 +60,30 @@ def computeSNR(inputFile, window, M, N, H):
             SNR1 and SNR2 are floats.
     """
     ## your code here
+    x = UF.wavread(inputFile)[1]
+    w = get_window(window, M)
+    x_prime = stft.stft(x, w, N, H)
+    x_trunc = trunc_signal(x, M)
+    x_prime_trunc = trunc_signal(x_prime, M)
+    return get_intro_noise(x, x_prime), get_intro_noise(x_trunc, x_prime_trunc)
+    
+
+def trunc_signal(x, M):
+    'Truncate both ends of a signal by a number of samples M'
+    return x[M:-M-1]
+
+def get_energy(x):
+    'Compute the energy of a signal x'
+    return np.sum(np.abs(x) ** 2)
+
+def get_snr_db(x, noise):
+    'Compute the SNR of a signal and its noise floor in dB'
+    return 10 * np.log10(get_energy(x) / get_energy(noise))
+
+def get_noise(x1, x2):
+    'Compute the noise introduced into a signal by subtracting the re-synthesized values from the original'
+    return x1 - x2
+
+def get_intro_noise(x1, x2):
+    'Calculate the noise introduced in re-synthesis of a signal'
+    return get_snr_db(x1, get_noise(x1, x2))

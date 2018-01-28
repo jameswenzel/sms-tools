@@ -4,7 +4,8 @@ import numpy as np
 from scipy.signal import get_window
 import matplotlib.pyplot as plt
 
-sys.path.append(os.path.join(os.path.dirname(os.path.realpath(__file__)), '../../software/models/'))
+sys.path.append(os.path.join(os.path.dirname(
+    os.path.realpath(__file__)), '../../software/models/'))
 import stft
 import utilFunctions as UF
 
@@ -65,6 +66,8 @@ test cases.You can clearly notice the sharp attacks and decay of the piano notes
 uses a larger window. You can infer the influence of window size on sharpness of the note attacks 
 and discuss it on the forums.
 """
+
+
 def computeEngEnv(inputFile, window, M, N, H):
     """
     Inputs:
@@ -80,6 +83,29 @@ def computeEngEnv(inputFile, window, M, N, H):
             engEnv[:,0]: Energy envelope in band 0 < f < 3000 Hz (in dB)
             engEnv[:,1]: Energy envelope in band 3000 < f < 10000 Hz (in dB)
     """
-    
-    ### your code here
-    
+
+
+    # your code here
+    fs, x = UF.wavread(inputFile)
+    w = get_window(window, M)
+    mX, pX = stft.stftAnal(x, w, N, H)
+    mX = db_to_linear(mX)
+    threek = [compute_energy(frame, 0, 3000, fs, N) for frame in mX]
+    tenk = [compute_energy(frame, 3000, 10000, fs, N) for frame in mX]
+    outX = np.array([[x, y] for x, y in zip(threek, tenk)])
+    return lin_to_db(outX)
+
+
+def db_to_linear(X):
+    return 10 ** (X / 20)
+
+
+def compute_energy(x, k1, k2, fs, N):
+    per_bin = fs / N
+    lower = int(k1 / per_bin) + 1
+    upper = int(k2 / per_bin) + 1
+    return np.sum(np.square(x[lower:upper]))
+
+
+def lin_to_db(X):
+    return 10 * np.log10(X)

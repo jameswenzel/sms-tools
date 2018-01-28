@@ -4,6 +4,9 @@ from scipy.fftpack import fft, fftshift
 import math
 import matplotlib.pyplot as plt
 eps = np.finfo(float).eps
+import sys
+sys.path.append('../../software/models/')
+import dftModel
 
 """ 
 A4-Part-1: Extracting the main lobe of the spectrum of a window
@@ -47,6 +50,8 @@ Test case 3: If you run your code using window = 'hamming' and M = 256, the outp
 should contain 33 samples.
 
 """
+
+
 def extractMainLobe(window, M):
     """
     Input:
@@ -58,7 +63,41 @@ def extractMainLobe(window, M):
             spectrum of the window in decibels (dB).
     """
 
-    w = get_window(window, M)         # get the window 
+    w = get_window(window, M)         # get the window
+
+    # Your code here
+    hM = int((M + 1) / 2)
+    N = 8 * M
+    # zero-window the...... window
+    fftbuffer = np.zeros(N)
+    fftbuffer[:hM] = w[hM:]
+    fftbuffer[-hM:] = w[:hM]
+    X = fft(fftbuffer)
+
+    mX = np.abs(X)
+    mX = 20 * np.log10(mX + eps)
+    mX = fftshift(mX)
+    peak = np.argmax(mX)
     
-    ### Your code here
+    # find local minima through loops I guess
+    left_min_val = mX[peak]
+    left_min_idx = peak
+    right_min_val = mX[peak]
+    right_min_idx = peak
+    while True:
+        left_min_idx -= 1
+        if left_min_val > mX[left_min_idx]:
+            left_min_val = mX[left_min_idx]
+        else:
+            left_min_idx += 1
+            break 
+    while True:
+        right_min_idx += 1
+        if right_min_val > mX[right_min_idx]:
+            right_min_val = mX[right_min_idx]
+        else:
+            right_min_idx -= 1
+            break
     
+    return mX[left_min_idx:right_min_idx + 1]
+
