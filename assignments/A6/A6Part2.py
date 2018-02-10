@@ -101,18 +101,41 @@ def segmentStableNotesRegions(inputFile = '../../sounds/sax-phrase-short.wav', s
     ### your code here
 
     # 1. convert f0 values from Hz to Cents (as described in pdf document)
+    f0[f0 == 0] = eps
+    f0_cents = 1200*np.log2(f0/55)
 
     #2. create an array containing standard deviation of last winStable samples
-
+    stds = []
+    for i in range(len(f0_cents)):
+        if i < winStable:
+            std = stdThsld + 1
+        else:
+            std = np.std(f0_cents[i - (winStable - 1):i + 1])
+        stds.append(std)
+    stds = np.array(stds)
+    
     #3. apply threshold on standard deviation values to find indexes of the stable points in melody
+    stable = np.where(stds < stdThsld + eps)[0]
 
     #4. create segments of continuous stable points such that consecutive stable points belong to same segment
+    segments = []
+    last_stable_index = 0
+    last_seen = 0
+    for i in stable:
+        if i - 1 > last_seen:
+            segments.append((last_stable_index, last_seen))
+            last_stable_index = i
+        last_seen = i
+    if last_seen - 1 == stable[-2]:
+        segments.append((last_stable_index, last_seen))
     
     #5. apply segment filtering, i.e. remove segments with are < minNoteDur in length
-    
-    # plotSpectogramF0Segments(x, fs, w, N, H, f0, segments)  # Plot spectrogram and F0 if needed
+    segments = list(filter(lambda x: ((x[1] - x[0]) * H) / fs >= minNoteDur, segments))
+    segments = np.array(segments)
+         
+#     plotSpectogramF0Segments(x, fs, w, N, H, f0, segments)  # Plot spectrogram and F0 if needed
 
-    # return segments
+    return segments
 
 
 def plotSpectogramF0Segments(x, fs, w, N, H, f0, segments):

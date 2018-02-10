@@ -74,12 +74,25 @@ def estimateInharmonicity(inputFile = '../../sounds/piano.wav', t1=0.1, t2=0.5, 
         meanInharm (float or np.float): mean inharmonicity over all the frames between the time interval 
                                         t1 and t2. 
     """
-    # 0. Read the audio file and obtain an analysis window
+        # 0. Read the audio file and obtain an analysis window
+    fs, x = UF.wavread(inputFile)
+    w = get_window(window, M)
     
     # 1. Use harmonic model to compute the harmonic frequencies and magnitudes
-    
+    xhfreq, xhmag, xhphase = HM.harmonicModelAnal(x, fs, w, N, H, t, nH, minf0, maxf0, f0et, harmDevSlope=0.01, minSineDur=0)
+    f0 = HM.f0Detection(x, fs, w, N, H, t, minf0, maxf0, f0et)
     # 2. Extract the time segment in which you need to compute the inharmonicity. 
+    t1 = int(np.ceil(t1 / (H / fs)))
+    t2 = int(np.ceil(t2 / (H / fs)))
+    xhfreq = xhfreq[t1:t2]
+    bf = f0[t1:t2]
     
     # 3. Compute the mean inharmonicity of the segment
+    I = []
+    for i, l in enumerate(xhfreq):
+        rs = np.arange(1, len(l) + 1)
+        i = np.abs(l - rs * bf[i]) / rs
+        I.append(sum(i) / len(i))
+    return np.sum(I) / len(I)
 
 
